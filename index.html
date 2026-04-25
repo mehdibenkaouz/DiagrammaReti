@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mappa Casa e Sfratti Bologna</title>
+  <title>Mappa Casa e Sfratti Bologna — Editor</title>
   <style>
     :root {
       --bg: #f7f3ee;
@@ -73,10 +73,35 @@
       white-space: nowrap;
     }
 
+    .mode-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #eef5ee;
+      color: var(--green);
+      border: 1px solid rgba(77,138,50,.3);
+    }
+    body.editing .mode-badge {
+      background: #fdf0e9;
+      color: var(--red);
+      border-color: rgba(185,59,59,.35);
+    }
+    .mode-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
     main {
       padding: 28px 40px 56px;
       display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
+      grid-template-columns: 360px minmax(0, 1fr);
       gap: 24px;
     }
 
@@ -103,6 +128,9 @@
       color: var(--muted);
       font-weight: 800;
     }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
 
     .search {
       width: 100%;
@@ -136,10 +164,7 @@
 
     .filter input { accent-color: var(--red); }
 
-    .list {
-      display: grid;
-      gap: 8px;
-    }
+    .list { display: grid; gap: 8px; }
 
     .list button {
       text-align: left;
@@ -150,6 +175,7 @@
       cursor: pointer;
       color: var(--ink);
       transition: .2s ease;
+      font-family: inherit;
     }
 
     .list button:hover, .list button.active {
@@ -163,6 +189,104 @@
       color: var(--muted);
       margin-top: 3px;
     }
+
+    /* Editor panel */
+    .editor-actions {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+      margin-bottom: 16px;
+    }
+
+    .editor-actions button {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 10px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,.12);
+      background: #fff;
+      cursor: pointer;
+      color: var(--ink);
+      transition: .15s ease;
+    }
+    .editor-actions button:hover {
+      border-color: var(--red);
+      transform: translateY(-1px);
+    }
+    .editor-actions button.full { grid-column: 1 / -1; }
+    .editor-actions button.danger {
+      color: var(--red);
+      border-color: rgba(185,59,59,.3);
+    }
+    .editor-actions button.active-action {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
+    }
+
+    .form-row {
+      display: grid;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .form-row label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+    }
+    .form-row input,
+    .form-row select,
+    .form-row textarea {
+      font-family: inherit;
+      font-size: 13px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,.12);
+      background: #fff;
+      outline: none;
+      width: 100%;
+      color: var(--ink);
+    }
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus {
+      border-color: var(--red);
+    }
+    .form-row textarea {
+      resize: vertical;
+      min-height: 60px;
+      font-family: inherit;
+    }
+    .form-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .placeholder-box {
+      border: 1px dashed rgba(0,0,0,.18);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .editor-tip {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin: 8px 0 16px;
+      padding: 10px 12px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 10px;
+    }
+    .editor-tip strong { color: var(--ink); }
 
     .content {
       display: grid;
@@ -189,6 +313,7 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     .btn {
@@ -199,12 +324,24 @@
       cursor: pointer;
       font-weight: 700;
       font-size: 13px;
+      font-family: inherit;
+      color: var(--ink);
     }
 
     .btn.primary {
       background: #441a1a;
       color: #fff;
       border-color: #441a1a;
+    }
+
+    .btn.toggle {
+      background: #fff;
+      color: var(--ink);
+    }
+    body.editing .btn.toggle {
+      background: var(--red);
+      color: #fff;
+      border-color: var(--red);
     }
 
     .map-scroll {
@@ -214,6 +351,12 @@
       border-radius: 14px;
       background: #fff;
       border: 1px solid rgba(0,0,0,.08);
+      position: relative;
+    }
+
+    body.editing .map-scroll {
+      border-color: var(--red);
+      box-shadow: inset 0 0 0 1px rgba(185,59,59,.25);
     }
 
     svg {
@@ -224,16 +367,54 @@
     }
 
     .cluster { fill-opacity: .12; stroke-width: 1.2; rx: 12; }
-    .cluster-label { font-size: 16px; font-weight: 800; fill: #222; }
+    .cluster-label { font-size: 16px; font-weight: 800; fill: #222; font-family: Georgia, 'Times New Roman', serif; }
     .node rect { fill: #fff; stroke: #8d3c3c; stroke-width: 1.2; rx: 9; }
-    .node text { font-size: 14px; fill: #111; pointer-events: none; }
+    .node text { font-size: 14px; fill: #111; pointer-events: none; font-family: Inter, Arial, sans-serif; }
     .node { cursor: pointer; transition: opacity .2s ease; }
     .node:hover rect, .node.active rect { stroke-width: 2.5; filter: drop-shadow(0 5px 10px rgba(0,0,0,.18)); }
     .edge { fill: none; stroke: #333; stroke-width: 1.2; marker-end: url(#arrow); }
     .edge.red { stroke: #c53030; marker-end: url(#arrowRed); }
-    .edge-label { font-size: 11px; fill: #111; paint-order: stroke; stroke: #fff; stroke-width: 4px; }
+    .edge-label { font-size: 11px; fill: #111; paint-order: stroke; stroke: #fff; stroke-width: 4px; font-family: Inter, Arial, sans-serif; }
     .edge-label.red { fill: #c53030; }
     .dim { opacity: .12; }
+
+    /* Editing styles */
+    body.editing .node { cursor: move; }
+    body.editing .cluster { cursor: move; }
+    body.editing .edge { cursor: pointer; stroke-width: 2; }
+    body.editing .edge:hover { stroke: var(--red); }
+
+    .node.selected-edit rect,
+    .cluster.selected-edit {
+      stroke: var(--red) !important;
+      stroke-width: 2.5 !important;
+      stroke-dasharray: 6 3;
+    }
+    .edge.selected-edit { stroke: var(--red); stroke-width: 3; }
+    .edge-label.selected-edit { fill: var(--red); font-weight: 800; }
+
+    .resize-handle {
+      fill: #fff;
+      stroke: var(--red);
+      stroke-width: 1.5;
+      cursor: nwse-resize;
+    }
+    .resize-handle.ne { cursor: nesw-resize; }
+    .resize-handle.sw { cursor: nesw-resize; }
+
+    .ghost-node {
+      fill: rgba(185,59,59,.1);
+      stroke: var(--red);
+      stroke-width: 1.5;
+      stroke-dasharray: 5 3;
+      pointer-events: none;
+    }
+
+    body.adding-edge .map-scroll { cursor: crosshair; }
+    body.adding-edge .node:hover rect {
+      stroke: var(--green);
+      stroke-width: 3;
+    }
 
     .details {
       padding: 22px;
@@ -302,7 +483,32 @@
 
     tr:hover td { background: #fff6ef; }
 
-    @media (max-width: 980px) {
+    /* Toast notifications */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #441a1a;
+      color: #fff;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+      opacity: 0;
+      transition: .3s ease;
+      pointer-events: none;
+      z-index: 100;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .toast.error { background: var(--red); }
+    .toast.success { background: var(--green); }
+
+    @media (max-width: 1080px) {
       header { padding: 24px 18px; position: static; }
       main { grid-template-columns: 1fr; padding: 18px; }
       aside { position: static; height: auto; }
@@ -316,22 +522,50 @@
     <div class="title-row">
       <div>
         <h1>Mappa Casa e Sfratti<br>Bologna</h1>
-        <p class="subtitle">Sito interattivo per esplorare realtà sociali e politiche legate a casa, sfratti, diritto all’abitare, governance istituzionale, sindacati, movimenti e terzo settore. Pensato come base pubblicabile gratuitamente su GitHub Pages.</p>
+        <p class="subtitle">Sito interattivo per esplorare realtà sociali e politiche legate a casa, sfratti, diritto all'abitare, governance istituzionale, sindacati, movimenti e terzo settore. Editor completo: trascina, ridimensiona, aggiungi e collega.</p>
       </div>
-      <div class="badge">Aggiornamento: 25 aprile 2026</div>
+      <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-end;">
+        <span class="badge" id="updateBadge">Aggiornamento: 25 aprile 2026</span>
+        <span class="mode-badge" id="modeBadge">Visualizzazione</span>
+      </div>
     </div>
   </header>
 
   <main>
     <aside>
-      <p class="section-title">Cerca</p>
-      <input id="search" class="search" placeholder="Cerca realtà, tipo, funzione..." />
+      <!-- VIEW MODE PANEL -->
+      <div id="viewPanel" class="panel active">
+        <p class="section-title">Cerca</p>
+        <input id="search" class="search" placeholder="Cerca realtà, tipo, funzione..." />
 
-      <p class="section-title" style="margin-top:20px;">Filtri</p>
-      <div id="filters" class="filters"></div>
+        <p class="section-title" style="margin-top:20px;">Filtri</p>
+        <div id="filters" class="filters"></div>
 
-      <p class="section-title">Realtà</p>
-      <div id="entityList" class="list"></div>
+        <p class="section-title">Realtà</p>
+        <div id="entityList" class="list"></div>
+      </div>
+
+      <!-- EDIT MODE PANEL -->
+      <div id="editPanel" class="panel">
+        <p class="section-title">Strumenti editor</p>
+        <div class="editor-tip">
+          <strong>Suggerimento:</strong> trascina nodi e cluster per spostarli. Usa le maniglie agli angoli per ridimensionarli. Clicca un edge per modificarlo.
+        </div>
+        <div class="editor-actions">
+          <button onclick="addNode()">+ Nodo</button>
+          <button onclick="addClusterAction()">+ Cluster</button>
+          <button id="addEdgeBtn" class="full" onclick="toggleAddEdge()">+ Nuovo edge</button>
+          <button class="full" onclick="exportJSON()">Esporta JSON</button>
+          <button class="full" onclick="document.getElementById('importFile').click()">Importa JSON</button>
+          <button class="full danger" onclick="resetToDefault()">Reset a default</button>
+        </div>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none" onchange="importJSON(event)" />
+
+        <p class="section-title" style="margin-top:24px;">Selezione</p>
+        <div id="propertyPanel">
+          <div class="placeholder-box">Nessun elemento selezionato.<br>Clicca un nodo, un cluster o un edge per modificarne le proprietà.</div>
+        </div>
+      </div>
     </aside>
 
     <section class="content">
@@ -341,11 +575,12 @@
             <p class="section-title" style="margin:0;">Diagramma interattivo</p>
           </div>
           <div class="toolbar-actions">
+            <button class="btn toggle" onclick="toggleEditMode()" id="editToggleBtn">Modalità modifica</button>
             <button class="btn" onclick="resetSelection()">Reset selezione</button>
             <button class="btn primary" onclick="downloadSVG()">Scarica SVG</button>
           </div>
         </div>
-        <div class="map-scroll">
+        <div class="map-scroll" id="mapScroll">
           <svg id="map" viewBox="0 0 1500 760" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
@@ -355,22 +590,6 @@
                 <path d="M0,0 L0,6 L9,3 z" fill="#c53030" />
               </marker>
             </defs>
-
-            <!-- clusters -->
-            <rect class="cluster" x="18" y="155" width="155" height="390" fill="#c85bd4" stroke="#9b3fa4" />
-            <text class="cluster-label" x="50" y="180">Sponde politiche</text>
-
-            <rect class="cluster" x="300" y="25" width="510" height="120" fill="#7cc35b" stroke="#4d8a32" />
-            <text class="cluster-label" x="535" y="48">Movimenti e comitati</text>
-
-            <rect class="cluster" x="255" y="405" width="170" height="210" fill="#888" stroke="#666" />
-            <text class="cluster-label" x="288" y="430">Sindacati/inquilini</text>
-
-            <rect class="cluster" x="710" y="300" width="420" height="290" fill="#f06b6b" stroke="#b93b3b" />
-            <text class="cluster-label" x="850" y="325">Governance istituzionale</text>
-
-            <rect class="cluster" x="1230" y="410" width="240" height="230" fill="#69b7ec" stroke="#2f83bd" />
-            <text class="cluster-label" x="1300" y="435">Terzo settore e cooperative</text>
           </svg>
         </div>
       </div>
@@ -384,7 +603,7 @@
         <div class="card">
           <h2>Sintesi strategica</h2>
           <p>Il ruolo più efficace è agire da ponte organizzato tra filiera istituzionale, conflitto abitativo, terzo settore competente e sponda politico-consiliare.</p>
-          <p>Separare questi piani riduce l’efficacia politica: il valore aggiunto sta nel connettere dati, casi reali, alleanze e strumenti amministrativi.</p>
+          <p>Separare questi piani riduce l'efficacia politica: il valore aggiunto sta nel connettere dati, casi reali, alleanze e strumenti amministrativi.</p>
         </div>
       </div>
 
@@ -400,77 +619,237 @@
     </section>
   </main>
 
+  <div class="toast" id="toast"></div>
+
   <script>
-    const entities = [
-      { id:'comune', name:'Comune Piano Abitare / OMSA', category:'Governance istituzionale', influence:'Alta', x:830, y:495, w:160, h:52, role:'Baricentro della governance locale dell’abitare.', utility:'Canale principale per dati, audizioni, verifiche, atti e monitoraggio politico.' },
-      { id:'fondazione', name:'Fondazione Abitare Bologna', category:'Governance istituzionale', influence:'Medio-alta', x:1015, y:395, w:120, h:50, role:'Agenzia sociale per l’affitto e affitto civico.', utility:'Leva concreta per chi è fuori sia da ERP sia dal mercato libero.' },
+    // =====================================================================
+    // DEFAULT DATA
+    // =====================================================================
+    const DEFAULT_CLUSTERS = [
+      { id:'cl-pol', label:'Sponde politiche', x:18, y:155, w:155, h:390, fill:'#c85bd4', stroke:'#9b3fa4', labelX:50, labelY:180 },
+      { id:'cl-mov', label:'Movimenti e comitati', x:300, y:25, w:510, h:120, fill:'#7cc35b', stroke:'#4d8a32', labelX:535, labelY:48 },
+      { id:'cl-sind', label:'Sindacati/inquilini', x:255, y:405, w:170, h:210, fill:'#888', stroke:'#666', labelX:288, labelY:430 },
+      { id:'cl-gov', label:'Governance istituzionale', x:710, y:300, w:420, h:290, fill:'#f06b6b', stroke:'#b93b3b', labelX:850, labelY:325 },
+      { id:'cl-terzo', label:'Terzo settore e cooperative', x:1230, y:410, w:240, h:230, fill:'#69b7ec', stroke:'#2f83bd', labelX:1300, labelY:435 }
+    ];
+
+    const DEFAULT_ENTITIES = [
+      { id:'comune', name:'Comune Piano Abitare / OMSA', category:'Governance istituzionale', influence:'Alta', x:830, y:495, w:160, h:52, role:'Baricentro della governance locale dell\u2019abitare.', utility:'Canale principale per dati, audizioni, verifiche, atti e monitoraggio politico.' },
+      { id:'fondazione', name:'Fondazione Abitare Bologna', category:'Governance istituzionale', influence:'Medio-alta', x:1015, y:395, w:120, h:50, role:'Agenzia sociale per l\u2019affitto e affitto civico.', utility:'Leva concreta per chi è fuori sia da ERP sia dal mercato libero.' },
       { id:'sportelli', name:'Sportelli sociali e Quartieri', category:'Governance istituzionale', influence:'Alta', x:1015, y:330, w:120, h:50, role:'Primo accesso territoriale ai servizi.', utility:'Antenne di quartiere per intercettare la crisi prima dello sfratto esecutivo.' },
       { id:'tribunale', name:'Tribunale convalide sfratto', category:'Governance istituzionale', influence:'Alta', x:1015, y:465, w:120, h:50, role:'Snodo di convalide ed esecuzioni.', utility:'Utile per conoscere tempi, udienze e flussi procedurali.' },
       { id:'acer', name:'ACER Bologna ERP / patrimonio', category:'Governance istituzionale', influence:'Alta', x:1015, y:540, w:120, h:50, role:'Gestione patrimonio ERP, graduatorie e assegnazioni.', utility:'Decisivo su vuoti, turnover, recuperi, criteri e graduatorie.' },
       { id:'asp', name:'ASP Città di Bologna welfare abitativo', category:'Governance istituzionale', influence:'Alta', x:1015, y:625, w:140, h:52, role:'Welfare abitativo, marginalità, SAI, transizioni.', utility:'Nodo chiave per homeless, migranti, fragilità e autonomia abitativa.' },
-
       { id:'plat', name:'PLAT', category:'Movimenti e comitati', influence:'Alta', x:650, y:110, w:80, h:34, role:'Soggetto strutturato del conflitto abitativo: sportelli, picchetti, occupazioni.', utility:'Indispensabile per capire e presidiare il conflitto dal basso.' },
       { id:'comitato', name:'Comitato Antisfratto', category:'Movimenti e comitati', influence:'Medio-alta', x:755, y:80, w:100, h:50, role:'Presidi sfratti, richiesta moratoria, risposta immediata.', utility:'Accesso diretto alle famiglie colpite e alla legittimità pubblica dello sfratto.' },
       { id:'sociallog', name:'Social Log', category:'Movimenti e comitati', influence:'Media', x:330, y:70, w:100, h:36, role:'Memoria organizzativa del movimento cittadino per la casa.', utility:'Utile come continuità storica del movimento per la casa.' },
       { id:'pensareurbano', name:'Pensare Urbano', category:'Movimenti e comitati', influence:'Medio-alta', x:330, y:125, w:130, h:36, role:'Cerniera civica su affitti brevi, uso turistico e diritto alla città.', utility:'Alleato forte per proposte regolative e narrazione pubblica.' },
-
       { id:'sunia', name:'SUNIA', category:'Sindacati inquilini', influence:'Alta', x:305, y:535, w:95, h:38, role:'Sindacato inquilini area CGIL; assistenza locazioni e pressione politica.', utility:'Interlocutore forte per casi, dati, emendamenti e campagne credibili.' },
-      { id:'sicet', name:'SICET', category:'Sindacati inquilini', influence:'Medio-alta', x:305, y:590, w:95, h:38, role:'Profilo negoziale area CISL su affitti, condominio, ERP.', utility:'Allarga l’interlocuzione oltre l’area militante.' },
+      { id:'sicet', name:'SICET', category:'Sindacati inquilini', influence:'Medio-alta', x:305, y:590, w:95, h:38, role:'Profilo negoziale area CISL su affitti, condominio, ERP.', utility:'Allarga l\u2019interlocuzione oltre l\u2019area militante.' },
       { id:'unione', name:'Unione Inquilini', category:'Sindacati inquilini', influence:'Medio-alta', x:305, y:475, w:95, h:46, role:'Sindacato inquilinista e movimentista su caro-affitti e precariato urbano.', utility:'Utile su studenti, precari e vertenze ad alta conflittualità.' },
       { id:'asia', name:'ASIA USB', category:'Sindacati inquilini', influence:'Media', x:305, y:430, w:95, h:38, role:'Sindacato di base: difesa sfratti, affitti, bollette, inquilini ACER.', utility:'Sensore di casi duri e conflittualità sociale.' },
-
       { id:'coalizione', name:'Coalizione Civica', category:'Sponde politiche', influence:'Alta', x:40, y:205, w:120, h:36, role:'Sinistra municipalista e sponda politico-istituzionale.', utility:'Alleato naturale per proposte con sbocco amministrativo.' },
       { id:'pap', name:'Potere al Popolo', category:'Sponde politiche', influence:'Media', x:40, y:275, w:120, h:36, role:'Sinistra radicale extra-istituzionale.', utility:'Pressione da sinistra e mobilitazione, con perimetro chiaro.' },
       { id:'pd', name:'PD Bologna', category:'Sponde politiche', influence:'Alta', x:55, y:345, w:100, h:36, role:'Attore decisivo nella maggioranza.', utility:'Necessario per bilanci, atti e macchina amministrativa.' },
       { id:'ev', name:'Europa Verde', category:'Sponde politiche', influence:'Media', x:45, y:415, w:110, h:36, role:'Area ecologista nella maggioranza locale.', utility:'Connette casa, ambiente, turismo e diritto allo studio.' },
       { id:'si', name:'Sinistra Italiana ruolo-ponte', category:'Sponde politiche', influence:'Alta', x:38, y:485, w:125, h:50, role:'Ponte tra istituzioni, conflitto abitativo, terzo settore e sponde politiche.', utility:'Ordinare, connettere e politicizzare la rete.' },
-
-      { id:'caritas', name:'Caritas', category:'Terzo settore e cooperative', influence:'Alta', x:1255, y:460, w:70, h:34, role:'Centri d’ascolto e povertà abitativa sommersa.', utility:'Intercetta fragilità che non arrivano ai sindacati o ai movimenti.' },
+      { id:'caritas', name:'Caritas', category:'Terzo settore e cooperative', influence:'Alta', x:1255, y:460, w:70, h:34, role:'Centri d\u2019ascolto e povertà abitativa sommersa.', utility:'Intercetta fragilità che non arrivano ai sindacati o ai movimenti.' },
       { id:'antoniano', name:'Antoniano', category:'Terzo settore e cooperative', influence:'Alta', x:1385, y:460, w:85, h:34, role:'Accoglienza e transizione abitativa.', utility:'Interlocutore trasversale su povertà, famiglie e nodo casa-servizi.' },
       { id:'mondodonna', name:'MondoDonna', category:'Terzo settore e cooperative', influence:'Medio-alta', x:1245, y:525, w:105, h:34, role:'Casa, violenza di genere e autonomia abitativa.', utility:'Partner decisivo sul nesso casa-violenza-autonomia.' },
-      { id:'cidas', name:'CIDAS', category:'Terzo settore e cooperative', influence:'Medio-alta', x:1285, y:590, w:70, h:34, role:'Grave emarginazione adulta, bassa soglia, piano invernale.', utility:'Partner operativo sulla logistica dell’emergenza.' },
+      { id:'cidas', name:'CIDAS', category:'Terzo settore e cooperative', influence:'Medio-alta', x:1285, y:590, w:70, h:34, role:'Grave emarginazione adulta, bassa soglia, piano invernale.', utility:'Partner operativo sulla logistica dell\u2019emergenza.' },
       { id:'piazzagrande', name:'Piazza Grande', category:'Terzo settore e cooperative', influence:'Alta', x:1275, y:665, w:110, h:34, role:'Housing First, homelessness, social housing.', utility:'Chiave per spostare il focus da dormitorio a housing-first.' }
     ];
 
-    const edges = [
-      ['sociallog','plat','ecosistema movimento'], ['plat','comitato','sostiene'], ['plat','comune','conflitto / negoziazione','red'],
-      ['coalizione','pensareurbano','proposte regolative'], ['pap','plat','mobilitazioni'], ['pd','comune','maggioranza'], ['ev','comune','maggioranza'], ['si','comune','atti / verifica'], ['si','sunia','dati e casi'], ['si','piazzagrande','housing-first'],
-      ['sunia','comune','accordo 2025'], ['sicet','comune','accordo 2025'], ['asia','plat','area conflitto'], ['unione','plat','radicamento dal basso'],
-      ['comune','sportelli','gestisce'], ['comune','fondazione','cofonda / finanzia'], ['comune','tribunale','protocolli morosità'], ['comune','acer','convenzioni / ERP'], ['comune','asp','coordina welfare'],
-      ['acer','mondodonna','protocollo alloggi'], ['asp','cidas','piano inverno'], ['asp','piazzagrande','housing first / reti'], ['caritas','antoniano','Toc Toc']
+    const DEFAULT_EDGES = [
+      { a:'sociallog', b:'plat', label:'ecosistema movimento' },
+      { a:'plat', b:'comitato', label:'sostiene' },
+      { a:'plat', b:'comune', label:'conflitto / negoziazione', color:'red' },
+      { a:'coalizione', b:'pensareurbano', label:'proposte regolative' },
+      { a:'pap', b:'plat', label:'mobilitazioni' },
+      { a:'pd', b:'comune', label:'maggioranza' },
+      { a:'ev', b:'comune', label:'maggioranza' },
+      { a:'si', b:'comune', label:'atti / verifica' },
+      { a:'si', b:'sunia', label:'dati e casi' },
+      { a:'si', b:'piazzagrande', label:'housing-first' },
+      { a:'sunia', b:'comune', label:'accordo 2025' },
+      { a:'sicet', b:'comune', label:'accordo 2025' },
+      { a:'asia', b:'plat', label:'area conflitto' },
+      { a:'unione', b:'plat', label:'radicamento dal basso' },
+      { a:'comune', b:'sportelli', label:'gestisce' },
+      { a:'comune', b:'fondazione', label:'cofonda / finanzia' },
+      { a:'comune', b:'tribunale', label:'protocolli morosità' },
+      { a:'comune', b:'acer', label:'convenzioni / ERP' },
+      { a:'comune', b:'asp', label:'coordina welfare' },
+      { a:'acer', b:'mondodonna', label:'protocollo alloggi' },
+      { a:'asp', b:'cidas', label:'piano inverno' },
+      { a:'asp', b:'piazzagrande', label:'housing first / reti' },
+      { a:'caritas', b:'antoniano', label:'Toc Toc' }
     ];
 
-    const categories = [...new Set(entities.map(e => e.category))];
-    const svg = document.getElementById('map');
+    const STORAGE_KEY = 'mappa-casa-bologna-state-v2';
+
+    // =====================================================================
+    // STATE
+    // =====================================================================
+    let state = loadState();
+    let editMode = false;
     let activeId = 'si';
-    let activeCats = new Set(categories);
+    let activeCats;
+    let selectedEdit = null; // { type: 'node'|'cluster'|'edge', id, ... }
+    let drag = null;
+    let resize = null;
+    let addingEdgeFrom = null;
+    let addingEdgeMode = false;
 
-    function center(e){ return {x:e.x + e.w/2, y:e.y + e.h/2}; }
-    function byId(id){ return entities.find(e => e.id === id); }
+    function freshState() {
+      return {
+        clusters: JSON.parse(JSON.stringify(DEFAULT_CLUSTERS)),
+        entities: JSON.parse(JSON.stringify(DEFAULT_ENTITIES)),
+        edges: JSON.parse(JSON.stringify(DEFAULT_EDGES))
+      };
+    }
 
-    function drawEdges(){
-      edges.forEach(([a,b,label,color]) => {
-        const A = byId(a), B = byId(b), ca = center(A), cb = center(B);
-        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
-        const dx = Math.abs(cb.x-ca.x) * .35;
-        path.setAttribute('d', `M ${ca.x} ${ca.y} C ${ca.x+dx} ${ca.y}, ${cb.x-dx} ${cb.y}, ${cb.x} ${cb.y}`);
-        path.setAttribute('class', `edge edge-${a} edge-${b} ${color === 'red' ? 'red' : ''}`);
-        path.dataset.a = a; path.dataset.b = b;
-        svg.appendChild(path);
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return freshState();
+        const parsed = JSON.parse(raw);
+        if (!parsed.clusters || !parsed.entities || !parsed.edges) return freshState();
+        return parsed;
+      } catch(e) {
+        return freshState();
+      }
+    }
 
-        const tx = (ca.x + cb.x)/2;
-        const ty = (ca.y + cb.y)/2 - 8;
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch(e) {
+        console.warn('Save failed:', e);
+      }
+    }
+
+    // =====================================================================
+    // UTILITY
+    // =====================================================================
+    const svg = document.getElementById('map');
+
+    function categories() {
+      return [...new Set(state.entities.map(e => e.category))];
+    }
+
+    function center(e){ return { x: e.x + e.w/2, y: e.y + e.h/2 }; }
+    function byId(id){ return state.entities.find(e => e.id === id); }
+    function clusterById(id){ return state.clusters.find(c => c.id === id); }
+    function edgeKey(e) { return `${e.a}__${e.b}`; }
+    function findEdge(key) { return state.edges.find(e => edgeKey(e) === key); }
+
+    function uid(prefix='n') {
+      let i = 1;
+      while (state.entities.some(e => e.id === `${prefix}${i}`) ||
+             state.clusters.some(c => c.id === `${prefix}${i}`)) i++;
+      return `${prefix}${i}`;
+    }
+
+    function svgPoint(evt) {
+      const pt = svg.createSVGPoint();
+      pt.x = evt.clientX;
+      pt.y = evt.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function showToast(msg, type='') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast show ' + type;
+      clearTimeout(showToast._tid);
+      showToast._tid = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // =====================================================================
+    // RENDER
+    // =====================================================================
+    function clearSVG() {
+      // Remove everything except <defs>
+      [...svg.children].forEach(child => {
+        if (child.tagName !== 'defs') svg.removeChild(child);
+      });
+    }
+
+    function render() {
+      clearSVG();
+      drawClusters();
+      drawEdges();
+      drawNodes();
+      if (editMode && selectedEdit) drawHandles();
+      renderList();
+      applyVisibility();
+      if (activeId && !editMode) highlightNetwork(activeId);
+      saveState();
+    }
+
+    function drawClusters() {
+      state.clusters.forEach(c => {
+        const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        r.setAttribute('class','cluster');
+        if (editMode && selectedEdit?.type === 'cluster' && selectedEdit.id === c.id) {
+          r.classList.add('selected-edit');
+        }
+        r.setAttribute('x', c.x);
+        r.setAttribute('y', c.y);
+        r.setAttribute('width', c.w);
+        r.setAttribute('height', c.h);
+        r.setAttribute('fill', c.fill);
+        r.setAttribute('stroke', c.stroke);
+        r.dataset.cid = c.id;
+        svg.appendChild(r);
+
         const t = document.createElementNS('http://www.w3.org/2000/svg','text');
-        t.setAttribute('x', tx); t.setAttribute('y', ty);
-        t.setAttribute('text-anchor','middle');
-        t.setAttribute('class', `edge-label edge-${a} edge-${b} ${color === 'red' ? 'red' : ''}`);
-        t.textContent = label;
-        t.dataset.a = a; t.dataset.b = b;
+        t.setAttribute('class','cluster-label');
+        t.setAttribute('x', c.labelX);
+        t.setAttribute('y', c.labelY);
+        t.textContent = c.label;
+        t.dataset.cid = c.id;
         svg.appendChild(t);
       });
     }
 
-    function wrapText(text, maxChars = 18){
+    function drawEdges() {
+      state.edges.forEach(e => {
+        const A = byId(e.a), B = byId(e.b);
+        if (!A || !B) return;
+        const ca = center(A), cb = center(B);
+        const dx = Math.abs(cb.x - ca.x) * .35;
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        path.setAttribute('d', `M ${ca.x} ${ca.y} C ${ca.x+dx} ${ca.y}, ${cb.x-dx} ${cb.y}, ${cb.x} ${cb.y}`);
+        let cls = `edge edge-${e.a} edge-${e.b}`;
+        if (e.color === 'red') cls += ' red';
+        if (editMode && selectedEdit?.type === 'edge' && selectedEdit.key === edgeKey(e)) cls += ' selected-edit';
+        path.setAttribute('class', cls);
+        path.dataset.a = e.a;
+        path.dataset.b = e.b;
+        path.dataset.key = edgeKey(e);
+        svg.appendChild(path);
+
+        const tx = (ca.x + cb.x) / 2;
+        const ty = (ca.y + cb.y) / 2 - 8;
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x', tx);
+        t.setAttribute('y', ty);
+        t.setAttribute('text-anchor','middle');
+        let lcls = `edge-label edge-${e.a} edge-${e.b}`;
+        if (e.color === 'red') lcls += ' red';
+        if (editMode && selectedEdit?.type === 'edge' && selectedEdit.key === edgeKey(e)) lcls += ' selected-edit';
+        t.setAttribute('class', lcls);
+        t.textContent = e.label || '';
+        t.dataset.a = e.a;
+        t.dataset.b = e.b;
+        t.dataset.key = edgeKey(e);
+        svg.appendChild(t);
+      });
+    }
+
+    function wrapText(text, maxChars = 18) {
       const words = text.split(' ');
       const lines = [];
       let line = '';
@@ -482,13 +861,22 @@
       return lines;
     }
 
-    function drawNodes(){
-      entities.forEach(e => {
+    function drawNodes() {
+      state.entities.forEach(e => {
         const g = document.createElementNS('http://www.w3.org/2000/svg','g');
         g.setAttribute('class','node');
+        if (e.id === activeId && !editMode) g.classList.add('active');
+        if (editMode && selectedEdit?.type === 'node' && selectedEdit.id === e.id) g.classList.add('selected-edit');
         g.dataset.id = e.id;
         g.dataset.category = e.category;
-        g.innerHTML = `<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}"></rect>`;
+
+        const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        r.setAttribute('x', e.x);
+        r.setAttribute('y', e.y);
+        r.setAttribute('width', e.w);
+        r.setAttribute('height', e.h);
+        g.appendChild(r);
+
         const lines = wrapText(e.name, e.w < 90 ? 10 : 18);
         lines.forEach((line, i) => {
           const t = document.createElementNS('http://www.w3.org/2000/svg','text');
@@ -498,42 +886,79 @@
           t.textContent = line;
           g.appendChild(t);
         });
-        g.addEventListener('click', () => selectEntity(e.id));
         svg.appendChild(g);
       });
     }
 
-    function populateFilters(){
+    function drawHandles() {
+      if (!selectedEdit) return;
+      let target = null;
+      if (selectedEdit.type === 'node') target = byId(selectedEdit.id);
+      else if (selectedEdit.type === 'cluster') target = clusterById(selectedEdit.id);
+      if (!target) return;
+
+      const corners = [
+        { x: target.x, y: target.y, dir: 'nw' },
+        { x: target.x + target.w, y: target.y, dir: 'ne' },
+        { x: target.x, y: target.y + target.h, dir: 'sw' },
+        { x: target.x + target.w, y: target.y + target.h, dir: 'se' }
+      ];
+      corners.forEach(c => {
+        const h = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        h.setAttribute('class', 'resize-handle ' + c.dir);
+        h.setAttribute('x', c.x - 5);
+        h.setAttribute('y', c.y - 5);
+        h.setAttribute('width', 10);
+        h.setAttribute('height', 10);
+        h.dataset.dir = c.dir;
+        h.dataset.targetType = selectedEdit.type;
+        h.dataset.targetId = selectedEdit.id;
+        svg.appendChild(h);
+      });
+    }
+
+    // =====================================================================
+    // VIEW MODE: list, filters, table, search, selection highlight
+    // =====================================================================
+    function populateFilters() {
+      const cats = categories();
+      if (!activeCats) activeCats = new Set(cats);
+      // ensure new categories are included
+      cats.forEach(c => activeCats.add(c));
       const box = document.getElementById('filters');
-      box.innerHTML = categories.map(c => `<label class="filter"><span>${c}</span><input type="checkbox" checked data-cat="${c}"></label>`).join('');
+      box.innerHTML = cats.map(c => `<label class="filter"><span>${escapeHtml(c)}</span><input type="checkbox" ${activeCats.has(c)?'checked':''} data-cat="${escapeHtml(c)}"></label>`).join('');
       box.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
         activeCats = new Set([...box.querySelectorAll('input:checked')].map(i => i.dataset.cat));
-        renderList(); applyVisibility();
+        renderList();
+        applyVisibility();
       }));
     }
 
-    function renderList(){
-      const q = document.getElementById('search').value.toLowerCase().trim();
+    function renderList() {
+      const q = (document.getElementById('search').value || '').toLowerCase().trim();
       const list = document.getElementById('entityList');
-      const rows = entities.filter(e => activeCats.has(e.category) && (e.name + e.category + e.role + e.utility).toLowerCase().includes(q));
-      list.innerHTML = rows.map(e => `<button class="${e.id===activeId?'active':''}" onclick="selectEntity('${e.id}')"><strong>${e.name}</strong><small>${e.category} · ${e.influence}</small></button>`).join('');
+      if (!list) return;
+      const rows = state.entities.filter(e => activeCats.has(e.category) && (e.name + e.category + e.role + e.utility).toLowerCase().includes(q));
+      list.innerHTML = rows.map(e => `<button class="${e.id===activeId?'active':''}" onclick="selectEntity('${e.id}')"><strong>${escapeHtml(e.name)}</strong><small>${escapeHtml(e.category)} · ${escapeHtml(e.influence||'')}</small></button>`).join('');
       renderTable(rows);
     }
 
-    function renderTable(rows){
+    function renderTable(rows) {
       const tbody = document.querySelector('#dataTable tbody');
-      tbody.innerHTML = rows.map(e => `<tr onclick="selectEntity('${e.id}')"><td><strong>${e.name}</strong></td><td>${e.category}</td><td>${e.influence}</td><td>${e.role}</td><td>${e.utility}</td></tr>`).join('');
+      tbody.innerHTML = rows.map(e => `<tr onclick="selectEntity('${e.id}')"><td><strong>${escapeHtml(e.name)}</strong></td><td>${escapeHtml(e.category)}</td><td>${escapeHtml(e.influence||'')}</td><td>${escapeHtml(e.role||'')}</td><td>${escapeHtml(e.utility||'')}</td></tr>`).join('');
     }
 
-    function selectEntity(id){
+    function selectEntity(id) {
       activeId = id;
       const e = byId(id);
-      document.getElementById('detailCard').innerHTML = `<h2>${e.name}</h2><div class="meta"><span class="pill">${e.category}</span><span class="pill">Influenza: ${e.influence}</span></div><p><strong>Funzione:</strong> ${e.role}</p><p><strong>Utilità per SI:</strong> ${e.utility}</p>`;
+      if (!e) return;
+      document.getElementById('detailCard').innerHTML = `<h2>${escapeHtml(e.name)}</h2><div class="meta"><span class="pill">${escapeHtml(e.category)}</span><span class="pill">Influenza: ${escapeHtml(e.influence||'')}</span></div><p><strong>Funzione:</strong> ${escapeHtml(e.role||'')}</p><p><strong>Utilità per SI:</strong> ${escapeHtml(e.utility||'')}</p>`;
       document.querySelectorAll('.node').forEach(n => n.classList.toggle('active', n.dataset.id === id));
-      renderList(); highlightNetwork(id);
+      renderList();
+      if (!editMode) highlightNetwork(id);
     }
 
-    function highlightNetwork(id){
+    function highlightNetwork(id) {
       document.querySelectorAll('.node,.edge,.edge-label').forEach(el => el.classList.add('dim'));
       document.querySelector(`.node[data-id="${id}"]`)?.classList.remove('dim');
       document.querySelectorAll(`[data-a="${id}"],[data-b="${id}"]`).forEach(el => {
@@ -543,40 +968,577 @@
       });
     }
 
-    function resetSelection(){
+    function resetSelection() {
       activeId = null;
       document.querySelectorAll('.node,.edge,.edge-label').forEach(el => el.classList.remove('dim','active'));
       document.getElementById('detailCard').innerHTML = `<h2>Mappa completa</h2><div class="meta"><span class="pill">Tutte le realtà</span></div><p>Seleziona un nodo per evidenziare le sue relazioni dirette.</p>`;
       renderList();
     }
 
-    function applyVisibility(){
+    function applyVisibility() {
+      if (!activeCats) return;
       document.querySelectorAll('.node').forEach(n => {
         n.style.display = activeCats.has(n.dataset.category) ? '' : 'none';
       });
       document.querySelectorAll('.edge,.edge-label').forEach(el => {
         const A = byId(el.dataset.a), B = byId(el.dataset.b);
+        if (!A || !B) return;
         el.style.display = activeCats.has(A.category) && activeCats.has(B.category) ? '' : 'none';
       });
     }
 
-    function downloadSVG(){
+    // =====================================================================
+    // EDIT MODE: toggle, drag, resize, property panel
+    // =====================================================================
+    function toggleEditMode() {
+      editMode = !editMode;
+      document.body.classList.toggle('editing', editMode);
+      document.getElementById('viewPanel').classList.toggle('active', !editMode);
+      document.getElementById('editPanel').classList.toggle('active', editMode);
+      document.getElementById('modeBadge').textContent = editMode ? 'Modifica' : 'Visualizzazione';
+      document.getElementById('editToggleBtn').textContent = editMode ? 'Esci da modifica' : 'Modalità modifica';
+      selectedEdit = null;
+      addingEdgeMode = false;
+      addingEdgeFrom = null;
+      document.body.classList.remove('adding-edge');
+      document.getElementById('addEdgeBtn').classList.remove('active-action');
+      if (!editMode) {
+        document.querySelectorAll('.node,.edge,.edge-label').forEach(el => el.classList.remove('dim','active'));
+      }
+      render();
+      updatePropertyPanel();
+      if (!editMode && activeId) selectEntity(activeId);
+    }
+
+    function selectForEdit(target) {
+      selectedEdit = target;
+      render();
+      updatePropertyPanel();
+    }
+
+    function updatePropertyPanel() {
+      const panel = document.getElementById('propertyPanel');
+      if (!selectedEdit) {
+        panel.innerHTML = `<div class="placeholder-box">Nessun elemento selezionato.<br>Clicca un nodo, un cluster o un edge per modificarne le proprietà.</div>`;
+        return;
+      }
+      if (selectedEdit.type === 'node') {
+        const e = byId(selectedEdit.id);
+        if (!e) { selectedEdit = null; return updatePropertyPanel(); }
+        const cats = categories();
+        // ensure current category is in dropdown even if it's the only entity in it
+        if (!cats.includes(e.category)) cats.push(e.category);
+        panel.innerHTML = `
+          <div class="form-row"><label>Tipo</label><input value="Nodo" disabled></div>
+          <div class="form-row"><label>ID</label><input value="${escapeAttr(e.id)}" disabled></div>
+          <div class="form-row"><label>Nome</label><input id="np-name" value="${escapeAttr(e.name)}"></div>
+          <div class="form-row"><label>Categoria</label>
+            <select id="np-cat">
+              ${cats.map(c => `<option ${c===e.category?'selected':''} value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('')}
+            </select>
+            <input id="np-cat-new" placeholder="Oppure: nuova categoria…" style="margin-top:6px">
+          </div>
+          <div class="form-row"><label>Influenza</label>
+            <select id="np-inf">
+              ${['Alta','Medio-alta','Media','Medio-bassa','Bassa'].map(v => `<option ${v===e.influence?'selected':''}>${v}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-row form-grid-2">
+            <div><label>X</label><input id="np-x" type="number" value="${e.x}"></div>
+            <div><label>Y</label><input id="np-y" type="number" value="${e.y}"></div>
+          </div>
+          <div class="form-row form-grid-2">
+            <div><label>Larghezza</label><input id="np-w" type="number" min="40" value="${e.w}"></div>
+            <div><label>Altezza</label><input id="np-h" type="number" min="20" value="${e.h}"></div>
+          </div>
+          <div class="form-row"><label>Funzione (role)</label><textarea id="np-role">${escapeHtml(e.role||'')}</textarea></div>
+          <div class="form-row"><label>Utilità (utility)</label><textarea id="np-util">${escapeHtml(e.utility||'')}</textarea></div>
+          <div class="editor-actions" style="margin-top:8px;">
+            <button class="full" onclick="applyNodeProps()">Applica modifiche</button>
+            <button class="full danger" onclick="deleteNode()">Elimina nodo</button>
+          </div>
+        `;
+      } else if (selectedEdit.type === 'cluster') {
+        const c = clusterById(selectedEdit.id);
+        if (!c) { selectedEdit = null; return updatePropertyPanel(); }
+        panel.innerHTML = `
+          <div class="form-row"><label>Tipo</label><input value="Cluster" disabled></div>
+          <div class="form-row"><label>ID</label><input value="${escapeAttr(c.id)}" disabled></div>
+          <div class="form-row"><label>Etichetta</label><input id="cp-label" value="${escapeAttr(c.label)}"></div>
+          <div class="form-row form-grid-2">
+            <div><label>Riempimento</label><input id="cp-fill" type="color" value="${toHex(c.fill)}"></div>
+            <div><label>Bordo</label><input id="cp-stroke" type="color" value="${toHex(c.stroke)}"></div>
+          </div>
+          <div class="form-row form-grid-2">
+            <div><label>X</label><input id="cp-x" type="number" value="${c.x}"></div>
+            <div><label>Y</label><input id="cp-y" type="number" value="${c.y}"></div>
+          </div>
+          <div class="form-row form-grid-2">
+            <div><label>Larghezza</label><input id="cp-w" type="number" min="60" value="${c.w}"></div>
+            <div><label>Altezza</label><input id="cp-h" type="number" min="60" value="${c.h}"></div>
+          </div>
+          <div class="form-row form-grid-2">
+            <div><label>Label X</label><input id="cp-lx" type="number" value="${c.labelX}"></div>
+            <div><label>Label Y</label><input id="cp-ly" type="number" value="${c.labelY}"></div>
+          </div>
+          <div class="editor-actions" style="margin-top:8px;">
+            <button class="full" onclick="applyClusterProps()">Applica modifiche</button>
+            <button class="full danger" onclick="deleteCluster()">Elimina cluster</button>
+          </div>
+        `;
+      } else if (selectedEdit.type === 'edge') {
+        const e = findEdge(selectedEdit.key);
+        if (!e) { selectedEdit = null; return updatePropertyPanel(); }
+        const A = byId(e.a), B = byId(e.b);
+        panel.innerHTML = `
+          <div class="form-row"><label>Tipo</label><input value="Edge" disabled></div>
+          <div class="form-row"><label>Da</label><input value="${escapeAttr(A?.name || e.a)}" disabled></div>
+          <div class="form-row"><label>A</label><input value="${escapeAttr(B?.name || e.b)}" disabled></div>
+          <div class="form-row"><label>Etichetta</label><input id="ep-label" value="${escapeAttr(e.label||'')}"></div>
+          <div class="form-row"><label>Stile</label>
+            <select id="ep-color">
+              <option value="" ${!e.color?'selected':''}>Normale (grigio)</option>
+              <option value="red" ${e.color==='red'?'selected':''}>Rosso (conflitto)</option>
+            </select>
+          </div>
+          <div class="editor-actions" style="margin-top:8px;">
+            <button class="full" onclick="applyEdgeProps()">Applica modifiche</button>
+            <button class="full danger" onclick="deleteEdge()">Elimina edge</button>
+          </div>
+        `;
+      }
+    }
+
+    function applyNodeProps() {
+      const e = byId(selectedEdit.id);
+      if (!e) return;
+      const newCatRaw = document.getElementById('np-cat-new').value.trim();
+      e.name = document.getElementById('np-name').value.trim() || e.name;
+      e.category = newCatRaw || document.getElementById('np-cat').value;
+      e.influence = document.getElementById('np-inf').value;
+      e.x = parseFloat(document.getElementById('np-x').value) || 0;
+      e.y = parseFloat(document.getElementById('np-y').value) || 0;
+      e.w = Math.max(40, parseFloat(document.getElementById('np-w').value) || 80);
+      e.h = Math.max(20, parseFloat(document.getElementById('np-h').value) || 34);
+      e.role = document.getElementById('np-role').value;
+      e.utility = document.getElementById('np-util').value;
+      populateFilters();
+      render();
+      updatePropertyPanel();
+      showToast('Nodo aggiornato', 'success');
+    }
+
+    function applyClusterProps() {
+      const c = clusterById(selectedEdit.id);
+      if (!c) return;
+      c.label = document.getElementById('cp-label').value.trim() || c.label;
+      c.fill = document.getElementById('cp-fill').value;
+      c.stroke = document.getElementById('cp-stroke').value;
+      c.x = parseFloat(document.getElementById('cp-x').value) || 0;
+      c.y = parseFloat(document.getElementById('cp-y').value) || 0;
+      c.w = Math.max(60, parseFloat(document.getElementById('cp-w').value) || 100);
+      c.h = Math.max(60, parseFloat(document.getElementById('cp-h').value) || 100);
+      c.labelX = parseFloat(document.getElementById('cp-lx').value) || c.x + 20;
+      c.labelY = parseFloat(document.getElementById('cp-ly').value) || c.y + 25;
+      render();
+      updatePropertyPanel();
+      showToast('Cluster aggiornato', 'success');
+    }
+
+    function applyEdgeProps() {
+      const e = findEdge(selectedEdit.key);
+      if (!e) return;
+      e.label = document.getElementById('ep-label').value;
+      const col = document.getElementById('ep-color').value;
+      if (col) e.color = col; else delete e.color;
+      render();
+      showToast('Edge aggiornato', 'success');
+    }
+
+    function deleteNode() {
+      if (!selectedEdit || selectedEdit.type !== 'node') return;
+      const e = byId(selectedEdit.id);
+      if (!e) return;
+      if (!confirm(`Eliminare il nodo "${e.name}" e tutti i suoi collegamenti?`)) return;
+      state.entities = state.entities.filter(x => x.id !== e.id);
+      state.edges = state.edges.filter(ed => ed.a !== e.id && ed.b !== e.id);
+      selectedEdit = null;
+      populateFilters();
+      render();
+      updatePropertyPanel();
+      showToast('Nodo eliminato', 'error');
+    }
+
+    function deleteCluster() {
+      if (!selectedEdit || selectedEdit.type !== 'cluster') return;
+      const c = clusterById(selectedEdit.id);
+      if (!c) return;
+      if (!confirm(`Eliminare il cluster "${c.label}"? I nodi non vengono eliminati.`)) return;
+      state.clusters = state.clusters.filter(x => x.id !== c.id);
+      selectedEdit = null;
+      render();
+      updatePropertyPanel();
+      showToast('Cluster eliminato', 'error');
+    }
+
+    function deleteEdge() {
+      if (!selectedEdit || selectedEdit.type !== 'edge') return;
+      if (!confirm('Eliminare questo edge?')) return;
+      state.edges = state.edges.filter(e => edgeKey(e) !== selectedEdit.key);
+      selectedEdit = null;
+      render();
+      updatePropertyPanel();
+      showToast('Edge eliminato', 'error');
+    }
+
+    function addNode() {
+      const id = uid('n');
+      const cats = categories();
+      const newNode = {
+        id,
+        name: 'Nuovo nodo',
+        category: cats[0] || 'Senza categoria',
+        influence: 'Media',
+        x: 700, y: 380, w: 120, h: 40,
+        role: '',
+        utility: ''
+      };
+      state.entities.push(newNode);
+      selectedEdit = { type: 'node', id };
+      populateFilters();
+      render();
+      updatePropertyPanel();
+      showToast('Nodo creato — modifica le proprietà', 'success');
+    }
+
+    function addClusterAction() {
+      const id = uid('cl');
+      const newCluster = {
+        id,
+        label: 'Nuovo cluster',
+        x: 600, y: 200, w: 220, h: 180,
+        fill: '#cccccc', stroke: '#666666',
+        labelX: 620, labelY: 222
+      };
+      state.clusters.push(newCluster);
+      selectedEdit = { type: 'cluster', id };
+      render();
+      updatePropertyPanel();
+      showToast('Cluster creato — modifica le proprietà', 'success');
+    }
+
+    function toggleAddEdge() {
+      addingEdgeMode = !addingEdgeMode;
+      addingEdgeFrom = null;
+      document.body.classList.toggle('adding-edge', addingEdgeMode);
+      document.getElementById('addEdgeBtn').classList.toggle('active-action', addingEdgeMode);
+      if (addingEdgeMode) {
+        showToast('Clicca il primo nodo (origine)', 'success');
+      }
+    }
+
+    function handleEdgeClick(nodeId) {
+      if (!addingEdgeFrom) {
+        addingEdgeFrom = nodeId;
+        showToast('Origine selezionata. Clicca il secondo nodo (destinazione).', 'success');
+        return;
+      }
+      if (addingEdgeFrom === nodeId) {
+        showToast('Stesso nodo: scegline un altro come destinazione.', 'error');
+        return;
+      }
+      // check duplicate
+      const exists = state.edges.some(e => (e.a === addingEdgeFrom && e.b === nodeId) || (e.a === nodeId && e.b === addingEdgeFrom));
+      if (exists) {
+        showToast('Esiste già un edge tra questi due nodi.', 'error');
+      } else {
+        const label = prompt('Etichetta dell\u2019edge:', '') || '';
+        state.edges.push({ a: addingEdgeFrom, b: nodeId, label });
+        showToast('Edge creato', 'success');
+      }
+      addingEdgeMode = false;
+      addingEdgeFrom = null;
+      document.body.classList.remove('adding-edge');
+      document.getElementById('addEdgeBtn').classList.remove('active-action');
+      render();
+    }
+
+    // =====================================================================
+    // DRAG & RESIZE
+    // =====================================================================
+    svg.addEventListener('mousedown', onSvgMouseDown);
+    window.addEventListener('mousemove', onSvgMouseMove);
+    window.addEventListener('mouseup', onSvgMouseUp);
+
+    function onSvgMouseDown(evt) {
+      // Resize handle
+      const handle = evt.target.closest('.resize-handle');
+      if (handle && editMode) {
+        evt.preventDefault();
+        const targetType = handle.dataset.targetType;
+        const targetId = handle.dataset.targetId;
+        const target = targetType === 'node' ? byId(targetId) : clusterById(targetId);
+        if (!target) return;
+        const start = svgPoint(evt);
+        resize = {
+          targetType, targetId, dir: handle.dataset.dir,
+          startX: start.x, startY: start.y,
+          origX: target.x, origY: target.y,
+          origW: target.w, origH: target.h
+        };
+        return;
+      }
+
+      if (!editMode) return;
+
+      // Edge click in edit mode
+      const edgeEl = evt.target.closest('.edge, .edge-label');
+      if (edgeEl && !addingEdgeMode) {
+        evt.preventDefault();
+        const key = edgeEl.dataset.key;
+        if (key) selectForEdit({ type: 'edge', key });
+        return;
+      }
+
+      // Node
+      const nodeEl = evt.target.closest('.node');
+      if (nodeEl) {
+        evt.preventDefault();
+        const id = nodeEl.dataset.id;
+        if (addingEdgeMode) {
+          handleEdgeClick(id);
+          return;
+        }
+        const e = byId(id);
+        if (!e) return;
+        const start = svgPoint(evt);
+        drag = {
+          targetType: 'node', targetId: id,
+          startX: start.x, startY: start.y,
+          origX: e.x, origY: e.y,
+          moved: false
+        };
+        return;
+      }
+
+      // Cluster
+      const clusterEl = evt.target.closest('.cluster, .cluster-label');
+      if (clusterEl) {
+        evt.preventDefault();
+        const cid = clusterEl.dataset.cid;
+        const c = clusterById(cid);
+        if (!c) return;
+        const start = svgPoint(evt);
+        drag = {
+          targetType: 'cluster', targetId: cid,
+          startX: start.x, startY: start.y,
+          origX: c.x, origY: c.y,
+          origLabelX: c.labelX, origLabelY: c.labelY,
+          moved: false
+        };
+        return;
+      }
+
+      // Click on empty area => deselect
+      if (evt.target === svg) {
+        selectForEdit(null);
+      }
+    }
+
+    function onSvgMouseMove(evt) {
+      if (resize) {
+        const p = svgPoint(evt);
+        const dx = p.x - resize.startX;
+        const dy = p.y - resize.startY;
+        const target = resize.targetType === 'node' ? byId(resize.targetId) : clusterById(resize.targetId);
+        if (!target) return;
+        const minW = resize.targetType === 'node' ? 40 : 60;
+        const minH = resize.targetType === 'node' ? 20 : 60;
+        let nx = resize.origX, ny = resize.origY, nw = resize.origW, nh = resize.origH;
+        if (resize.dir.includes('e')) nw = Math.max(minW, resize.origW + dx);
+        if (resize.dir.includes('s')) nh = Math.max(minH, resize.origH + dy);
+        if (resize.dir.includes('w')) {
+          nw = Math.max(minW, resize.origW - dx);
+          nx = resize.origX + (resize.origW - nw);
+        }
+        if (resize.dir.includes('n')) {
+          nh = Math.max(minH, resize.origH - dy);
+          ny = resize.origY + (resize.origH - nh);
+        }
+        target.x = nx; target.y = ny; target.w = nw; target.h = nh;
+        render();
+        return;
+      }
+
+      if (drag) {
+        const p = svgPoint(evt);
+        const dx = p.x - drag.startX;
+        const dy = p.y - drag.startY;
+        if (Math.abs(dx) + Math.abs(dy) > 2) drag.moved = true;
+        if (drag.targetType === 'node') {
+          const e = byId(drag.targetId);
+          if (e) { e.x = drag.origX + dx; e.y = drag.origY + dy; render(); }
+        } else if (drag.targetType === 'cluster') {
+          const c = clusterById(drag.targetId);
+          if (c) {
+            c.x = drag.origX + dx;
+            c.y = drag.origY + dy;
+            c.labelX = drag.origLabelX + dx;
+            c.labelY = drag.origLabelY + dy;
+            render();
+          }
+        }
+      }
+    }
+
+    function onSvgMouseUp(evt) {
+      if (resize) { resize = null; return; }
+      if (drag) {
+        if (!drag.moved) {
+          // treat as a click → select for edit
+          if (drag.targetType === 'node') {
+            selectForEdit({ type: 'node', id: drag.targetId });
+          } else if (drag.targetType === 'cluster') {
+            selectForEdit({ type: 'cluster', id: drag.targetId });
+          }
+        }
+        drag = null;
+      }
+    }
+
+    // Click on node in view mode → select for details
+    svg.addEventListener('click', (evt) => {
+      if (editMode) return;
+      const nodeEl = evt.target.closest('.node');
+      if (nodeEl) selectEntity(nodeEl.dataset.id);
+    });
+
+    // =====================================================================
+    // IMPORT / EXPORT
+    // =====================================================================
+    function exportJSON() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mappa-casa-bologna.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('JSON esportato', 'success');
+    }
+
+    function importJSON(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (!parsed.entities || !parsed.edges || !parsed.clusters) {
+            throw new Error('Formato non valido');
+          }
+          state = parsed;
+          activeCats = null;
+          selectedEdit = null;
+          populateFilters();
+          render();
+          updatePropertyPanel();
+          showToast('JSON importato', 'success');
+        } catch(err) {
+          showToast('Errore: file JSON non valido', 'error');
+        }
+      };
+      reader.readAsText(file);
+      evt.target.value = '';
+    }
+
+    function resetToDefault() {
+      if (!confirm('Reset completo: tutte le modifiche locali andranno perse. Procedere?')) return;
+      state = freshState();
+      activeCats = null;
+      selectedEdit = null;
+      populateFilters();
+      render();
+      updatePropertyPanel();
+      showToast('Stato ripristinato', 'success');
+    }
+
+    // =====================================================================
+    // SVG DOWNLOAD WITH INLINED STYLES
+    // =====================================================================
+    const SVG_INLINE_STYLES = `
+      .cluster { fill-opacity: 0.12; stroke-width: 1.2; }
+      .cluster-label { font-size: 16px; font-weight: 800; fill: #222; font-family: Georgia, 'Times New Roman', serif; }
+      .node rect { fill: #fff; stroke: #8d3c3c; stroke-width: 1.2; rx: 9; }
+      .node text { font-size: 14px; fill: #111; font-family: Inter, Arial, Helvetica, sans-serif; }
+      .edge { fill: none; stroke: #333; stroke-width: 1.2; }
+      .edge.red { stroke: #c53030; }
+      .edge-label { font-size: 11px; fill: #111; paint-order: stroke; stroke: #fff; stroke-width: 4px; font-family: Inter, Arial, Helvetica, sans-serif; }
+      .edge-label.red { fill: #c53030; }
+    `;
+
+    function downloadSVG() {
+      // Snapshot the current SVG, strip editor-only elements, inline styles
+      const clone = svg.cloneNode(true);
+      // Remove resize handles and any selected-edit styling
+      clone.querySelectorAll('.resize-handle').forEach(el => el.remove());
+      clone.querySelectorAll('.selected-edit').forEach(el => el.classList.remove('selected-edit'));
+      clone.querySelectorAll('.dim').forEach(el => el.classList.remove('dim'));
+      clone.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+      // Hide nothing — show all categories regardless of current filter
+      clone.querySelectorAll('[style*="display"]').forEach(el => el.removeAttribute('style'));
+
+      // Ensure xmlns
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+      // Inject style block as first child after defs
+      const styleEl = document.createElementNS('http://www.w3.org/2000/svg','style');
+      styleEl.textContent = SVG_INLINE_STYLES;
+      const defs = clone.querySelector('defs');
+      if (defs) defs.appendChild(styleEl);
+      else clone.insertBefore(styleEl, clone.firstChild);
+
+      // Add an explicit width/height for tools that ignore viewBox
+      clone.setAttribute('width', '1500');
+      clone.setAttribute('height', '760');
+
       const serializer = new XMLSerializer();
-      const source = serializer.serializeToString(svg);
-      const blob = new Blob([source], {type:'image/svg+xml;charset=utf-8'});
+      const source = '<?xml version="1.0" encoding="UTF-8"?>\n' + serializer.serializeToString(clone);
+      const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = 'mappa-casa-sfratti-bologna.svg';
       a.click();
       URL.revokeObjectURL(url);
+      showToast('SVG scaricato', 'success');
     }
 
+    // =====================================================================
+    // HELPERS
+    // =====================================================================
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function escapeAttr(s) { return escapeHtml(s); }
+    function toHex(c) {
+      if (!c) return '#000000';
+      if (c.startsWith('#')) {
+        if (c.length === 4) return '#' + c.slice(1).split('').map(x => x+x).join('');
+        return c;
+      }
+      // Convert named colors / rgb to hex via canvas
+      const ctx = document.createElement('canvas').getContext('2d');
+      ctx.fillStyle = c;
+      return ctx.fillStyle;
+    }
+
+    // =====================================================================
+    // INIT
+    // =====================================================================
     document.getElementById('search').addEventListener('input', renderList);
-    drawEdges();
-    drawNodes();
     populateFilters();
-    renderList();
+    render();
     selectEntity('si');
   </script>
 </body>
