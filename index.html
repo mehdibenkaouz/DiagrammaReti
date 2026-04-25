@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mappa Casa e Sfratti Bologna</title>
+  <style>
+    :root {
+      --bg: #f7f3ee;
+      --paper: #fffaf4;
+      --ink: #231f20;
+      --muted: #6d625b;
+      --red: #b93b3b;
+      --green: #4d8a32;
+      --blue: #2f83bd;
+      --purple: #9b3fa4;
+      --gray: #5f5f5f;
+      --shadow: 0 14px 40px rgba(0,0,0,.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top left, #fff, var(--bg));
+      color: var(--ink);
+      font-family: Inter, Arial, sans-serif;
+    }
+
+    header {
+      padding: 34px 40px 22px;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+      background: rgba(255,250,244,.88);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: end;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(30px, 4vw, 58px);
+      letter-spacing: -0.04em;
+      line-height: .94;
+      color: #441a1a;
+    }
+
+    .subtitle {
+      margin: 14px 0 0;
+      max-width: 980px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .badge {
+      border: 1px solid rgba(185,59,59,.25);
+      color: var(--red);
+      border-radius: 999px;
+      padding: 9px 14px;
+      font-size: 13px;
+      background: #fff;
+      white-space: nowrap;
+    }
+
+    main {
+      padding: 28px 40px 56px;
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 24px;
+    }
+
+    aside, .workspace, .details {
+      background: rgba(255,250,244,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    aside {
+      padding: 20px;
+      height: calc(100vh - 170px);
+      position: sticky;
+      top: 140px;
+      overflow: auto;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .search {
+      width: 100%;
+      border: 1px solid rgba(0,0,0,.14);
+      border-radius: 12px;
+      padding: 12px 13px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+    }
+
+    .filters {
+      display: grid;
+      gap: 8px;
+      margin: 16px 0 22px;
+    }
+
+    .filter {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,.1);
+      border-radius: 12px;
+      background: #fff;
+      cursor: pointer;
+      user-select: none;
+      font-size: 14px;
+    }
+
+    .filter input { accent-color: var(--red); }
+
+    .list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .list button {
+      text-align: left;
+      border: 1px solid rgba(0,0,0,.1);
+      background: #fff;
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      color: var(--ink);
+      transition: .2s ease;
+    }
+
+    .list button:hover, .list button.active {
+      border-color: var(--red);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(185,59,59,.08);
+    }
+
+    .list small {
+      display: block;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .content {
+      display: grid;
+      gap: 24px;
+      min-width: 0;
+    }
+
+    .workspace {
+      padding: 18px;
+      min-height: 650px;
+      overflow: hidden;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: 1px solid rgba(0,0,0,.14);
+      background: #fff;
+      border-radius: 12px;
+      padding: 9px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .btn.primary {
+      background: #441a1a;
+      color: #fff;
+      border-color: #441a1a;
+    }
+
+    .map-scroll {
+      width: 100%;
+      height: 590px;
+      overflow: auto;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+
+    svg {
+      display: block;
+      min-width: 1500px;
+      min-height: 760px;
+      background: #fff;
+    }
+
+    .cluster { fill-opacity: .12; stroke-width: 1.2; rx: 12; }
+    .cluster-label { font-size: 16px; font-weight: 800; fill: #222; }
+    .node rect { fill: #fff; stroke: #8d3c3c; stroke-width: 1.2; rx: 9; }
+    .node text { font-size: 14px; fill: #111; pointer-events: none; }
+    .node { cursor: pointer; transition: opacity .2s ease; }
+    .node:hover rect, .node.active rect { stroke-width: 2.5; filter: drop-shadow(0 5px 10px rgba(0,0,0,.18)); }
+    .edge { fill: none; stroke: #333; stroke-width: 1.2; marker-end: url(#arrow); }
+    .edge.red { stroke: #c53030; marker-end: url(#arrowRed); }
+    .edge-label { font-size: 11px; fill: #111; paint-order: stroke; stroke: #fff; stroke-width: 4px; }
+    .edge-label.red { fill: #c53030; }
+    .dim { opacity: .12; }
+
+    .details {
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-family: Georgia, 'Times New Roman', serif;
+      color: #441a1a;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .pill {
+      border: 1px solid rgba(0,0,0,.12);
+      padding: 6px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+      background: #fff;
+    }
+
+    .card p {
+      line-height: 1.55;
+      margin: 0 0 12px;
+      color: #3d3530;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.08);
+      background: #fff;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 1100px;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+      vertical-align: top;
+    }
+
+    th {
+      text-align: left;
+      background: #f5eee8;
+      color: #44201d;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:hover td { background: #fff6ef; }
+
+    @media (max-width: 980px) {
+      header { padding: 24px 18px; position: static; }
+      main { grid-template-columns: 1fr; padding: 18px; }
+      aside { position: static; height: auto; }
+      .details { grid-template-columns: 1fr; }
+      svg { min-width: 1300px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-row">
+      <div>
+        <h1>Mappa Casa e Sfratti<br>Bologna</h1>
+        <p class="subtitle">Sito interattivo per esplorare realtà sociali e politiche legate a casa, sfratti, diritto all’abitare, governance istituzionale, sindacati, movimenti e terzo settore. Pensato come base pubblicabile gratuitamente su GitHub Pages.</p>
+      </div>
+      <div class="badge">Aggiornamento: 25 aprile 2026</div>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <p class="section-title">Cerca</p>
+      <input id="search" class="search" placeholder="Cerca realtà, tipo, funzione..." />
+
+      <p class="section-title" style="margin-top:20px;">Filtri</p>
+      <div id="filters" class="filters"></div>
+
+      <p class="section-title">Realtà</p>
+      <div id="entityList" class="list"></div>
+    </aside>
+
+    <section class="content">
+      <div class="workspace">
+        <div class="toolbar">
+          <div>
+            <p class="section-title" style="margin:0;">Diagramma interattivo</p>
+          </div>
+          <div class="toolbar-actions">
+            <button class="btn" onclick="resetSelection()">Reset selezione</button>
+            <button class="btn primary" onclick="downloadSVG()">Scarica SVG</button>
+          </div>
+        </div>
+        <div class="map-scroll">
+          <svg id="map" viewBox="0 0 1500 760" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#333" />
+              </marker>
+              <marker id="arrowRed" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#c53030" />
+              </marker>
+            </defs>
+
+            <!-- clusters -->
+            <rect class="cluster" x="18" y="155" width="155" height="390" fill="#c85bd4" stroke="#9b3fa4" />
+            <text class="cluster-label" x="50" y="180">Sponde politiche</text>
+
+            <rect class="cluster" x="300" y="25" width="510" height="120" fill="#7cc35b" stroke="#4d8a32" />
+            <text class="cluster-label" x="535" y="48">Movimenti e comitati</text>
+
+            <rect class="cluster" x="255" y="405" width="170" height="210" fill="#888" stroke="#666" />
+            <text class="cluster-label" x="288" y="430">Sindacati/inquilini</text>
+
+            <rect class="cluster" x="710" y="300" width="420" height="290" fill="#f06b6b" stroke="#b93b3b" />
+            <text class="cluster-label" x="850" y="325">Governance istituzionale</text>
+
+            <rect class="cluster" x="1230" y="410" width="240" height="230" fill="#69b7ec" stroke="#2f83bd" />
+            <text class="cluster-label" x="1300" y="435">Terzo settore e cooperative</text>
+          </svg>
+        </div>
+      </div>
+
+      <div class="details">
+        <div class="card" id="detailCard">
+          <h2>Sinistra Italiana</h2>
+          <div class="meta"><span class="pill">Sponda politica</span><span class="pill">ruolo-ponte</span></div>
+          <p>Seleziona un nodo dal diagramma o dalla lista per vedere dettagli e funzione strategica.</p>
+        </div>
+        <div class="card">
+          <h2>Sintesi strategica</h2>
+          <p>Il ruolo più efficace è agire da ponte organizzato tra filiera istituzionale, conflitto abitativo, terzo settore competente e sponda politico-consiliare.</p>
+          <p>Separare questi piani riduce l’efficacia politica: il valore aggiunto sta nel connettere dati, casi reali, alleanze e strumenti amministrativi.</p>
+        </div>
+      </div>
+
+      <div class="workspace">
+        <div class="toolbar"><p class="section-title" style="margin:0;">Tabella operativa</p></div>
+        <div class="table-wrap">
+          <table id="dataTable">
+            <thead><tr><th>Realtà</th><th>Categoria</th><th>Influenza</th><th>Funzione</th><th>Utilità per SI</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const entities = [
+      { id:'comune', name:'Comune Piano Abitare / OMSA', category:'Governance istituzionale', influence:'Alta', x:830, y:495, w:160, h:52, role:'Baricentro della governance locale dell’abitare.', utility:'Canale principale per dati, audizioni, verifiche, atti e monitoraggio politico.' },
+      { id:'fondazione', name:'Fondazione Abitare Bologna', category:'Governance istituzionale', influence:'Medio-alta', x:1015, y:395, w:120, h:50, role:'Agenzia sociale per l’affitto e affitto civico.', utility:'Leva concreta per chi è fuori sia da ERP sia dal mercato libero.' },
+      { id:'sportelli', name:'Sportelli sociali e Quartieri', category:'Governance istituzionale', influence:'Alta', x:1015, y:330, w:120, h:50, role:'Primo accesso territoriale ai servizi.', utility:'Antenne di quartiere per intercettare la crisi prima dello sfratto esecutivo.' },
+      { id:'tribunale', name:'Tribunale convalide sfratto', category:'Governance istituzionale', influence:'Alta', x:1015, y:465, w:120, h:50, role:'Snodo di convalide ed esecuzioni.', utility:'Utile per conoscere tempi, udienze e flussi procedurali.' },
+      { id:'acer', name:'ACER Bologna ERP / patrimonio', category:'Governance istituzionale', influence:'Alta', x:1015, y:540, w:120, h:50, role:'Gestione patrimonio ERP, graduatorie e assegnazioni.', utility:'Decisivo su vuoti, turnover, recuperi, criteri e graduatorie.' },
+      { id:'asp', name:'ASP Città di Bologna welfare abitativo', category:'Governance istituzionale', influence:'Alta', x:1015, y:625, w:140, h:52, role:'Welfare abitativo, marginalità, SAI, transizioni.', utility:'Nodo chiave per homeless, migranti, fragilità e autonomia abitativa.' },
+
+      { id:'plat', name:'PLAT', category:'Movimenti e comitati', influence:'Alta', x:650, y:110, w:80, h:34, role:'Soggetto strutturato del conflitto abitativo: sportelli, picchetti, occupazioni.', utility:'Indispensabile per capire e presidiare il conflitto dal basso.' },
+      { id:'comitato', name:'Comitato Antisfratto', category:'Movimenti e comitati', influence:'Medio-alta', x:755, y:80, w:100, h:50, role:'Presidi sfratti, richiesta moratoria, risposta immediata.', utility:'Accesso diretto alle famiglie colpite e alla legittimità pubblica dello sfratto.' },
+      { id:'sociallog', name:'Social Log', category:'Movimenti e comitati', influence:'Media', x:330, y:70, w:100, h:36, role:'Memoria organizzativa del movimento cittadino per la casa.', utility:'Utile come continuità storica del movimento per la casa.' },
+      { id:'pensareurbano', name:'Pensare Urbano', category:'Movimenti e comitati', influence:'Medio-alta', x:330, y:125, w:130, h:36, role:'Cerniera civica su affitti brevi, uso turistico e diritto alla città.', utility:'Alleato forte per proposte regolative e narrazione pubblica.' },
+
+      { id:'sunia', name:'SUNIA', category:'Sindacati inquilini', influence:'Alta', x:305, y:535, w:95, h:38, role:'Sindacato inquilini area CGIL; assistenza locazioni e pressione politica.', utility:'Interlocutore forte per casi, dati, emendamenti e campagne credibili.' },
+      { id:'sicet', name:'SICET', category:'Sindacati inquilini', influence:'Medio-alta', x:305, y:590, w:95, h:38, role:'Profilo negoziale area CISL su affitti, condominio, ERP.', utility:'Allarga l’interlocuzione oltre l’area militante.' },
+      { id:'unione', name:'Unione Inquilini', category:'Sindacati inquilini', influence:'Medio-alta', x:305, y:475, w:95, h:46, role:'Sindacato inquilinista e movimentista su caro-affitti e precariato urbano.', utility:'Utile su studenti, precari e vertenze ad alta conflittualità.' },
+      { id:'asia', name:'ASIA USB', category:'Sindacati inquilini', influence:'Media', x:305, y:430, w:95, h:38, role:'Sindacato di base: difesa sfratti, affitti, bollette, inquilini ACER.', utility:'Sensore di casi duri e conflittualità sociale.' },
+
+      { id:'coalizione', name:'Coalizione Civica', category:'Sponde politiche', influence:'Alta', x:40, y:205, w:120, h:36, role:'Sinistra municipalista e sponda politico-istituzionale.', utility:'Alleato naturale per proposte con sbocco amministrativo.' },
+      { id:'pap', name:'Potere al Popolo', category:'Sponde politiche', influence:'Media', x:40, y:275, w:120, h:36, role:'Sinistra radicale extra-istituzionale.', utility:'Pressione da sinistra e mobilitazione, con perimetro chiaro.' },
+      { id:'pd', name:'PD Bologna', category:'Sponde politiche', influence:'Alta', x:55, y:345, w:100, h:36, role:'Attore decisivo nella maggioranza.', utility:'Necessario per bilanci, atti e macchina amministrativa.' },
+      { id:'ev', name:'Europa Verde', category:'Sponde politiche', influence:'Media', x:45, y:415, w:110, h:36, role:'Area ecologista nella maggioranza locale.', utility:'Connette casa, ambiente, turismo e diritto allo studio.' },
+      { id:'si', name:'Sinistra Italiana ruolo-ponte', category:'Sponde politiche', influence:'Alta', x:38, y:485, w:125, h:50, role:'Ponte tra istituzioni, conflitto abitativo, terzo settore e sponde politiche.', utility:'Ordinare, connettere e politicizzare la rete.' },
+
+      { id:'caritas', name:'Caritas', category:'Terzo settore e cooperative', influence:'Alta', x:1255, y:460, w:70, h:34, role:'Centri d’ascolto e povertà abitativa sommersa.', utility:'Intercetta fragilità che non arrivano ai sindacati o ai movimenti.' },
+      { id:'antoniano', name:'Antoniano', category:'Terzo settore e cooperative', influence:'Alta', x:1385, y:460, w:85, h:34, role:'Accoglienza e transizione abitativa.', utility:'Interlocutore trasversale su povertà, famiglie e nodo casa-servizi.' },
+      { id:'mondodonna', name:'MondoDonna', category:'Terzo settore e cooperative', influence:'Medio-alta', x:1245, y:525, w:105, h:34, role:'Casa, violenza di genere e autonomia abitativa.', utility:'Partner decisivo sul nesso casa-violenza-autonomia.' },
+      { id:'cidas', name:'CIDAS', category:'Terzo settore e cooperative', influence:'Medio-alta', x:1285, y:590, w:70, h:34, role:'Grave emarginazione adulta, bassa soglia, piano invernale.', utility:'Partner operativo sulla logistica dell’emergenza.' },
+      { id:'piazzagrande', name:'Piazza Grande', category:'Terzo settore e cooperative', influence:'Alta', x:1275, y:665, w:110, h:34, role:'Housing First, homelessness, social housing.', utility:'Chiave per spostare il focus da dormitorio a housing-first.' }
+    ];
+
+    const edges = [
+      ['sociallog','plat','ecosistema movimento'], ['plat','comitato','sostiene'], ['plat','comune','conflitto / negoziazione','red'],
+      ['coalizione','pensareurbano','proposte regolative'], ['pap','plat','mobilitazioni'], ['pd','comune','maggioranza'], ['ev','comune','maggioranza'], ['si','comune','atti / verifica'], ['si','sunia','dati e casi'], ['si','piazzagrande','housing-first'],
+      ['sunia','comune','accordo 2025'], ['sicet','comune','accordo 2025'], ['asia','plat','area conflitto'], ['unione','plat','radicamento dal basso'],
+      ['comune','sportelli','gestisce'], ['comune','fondazione','cofonda / finanzia'], ['comune','tribunale','protocolli morosità'], ['comune','acer','convenzioni / ERP'], ['comune','asp','coordina welfare'],
+      ['acer','mondodonna','protocollo alloggi'], ['asp','cidas','piano inverno'], ['asp','piazzagrande','housing first / reti'], ['caritas','antoniano','Toc Toc']
+    ];
+
+    const categories = [...new Set(entities.map(e => e.category))];
+    const svg = document.getElementById('map');
+    let activeId = 'si';
+    let activeCats = new Set(categories);
+
+    function center(e){ return {x:e.x + e.w/2, y:e.y + e.h/2}; }
+    function byId(id){ return entities.find(e => e.id === id); }
+
+    function drawEdges(){
+      edges.forEach(([a,b,label,color]) => {
+        const A = byId(a), B = byId(b), ca = center(A), cb = center(B);
+        const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+        const dx = Math.abs(cb.x-ca.x) * .35;
+        path.setAttribute('d', `M ${ca.x} ${ca.y} C ${ca.x+dx} ${ca.y}, ${cb.x-dx} ${cb.y}, ${cb.x} ${cb.y}`);
+        path.setAttribute('class', `edge edge-${a} edge-${b} ${color === 'red' ? 'red' : ''}`);
+        path.dataset.a = a; path.dataset.b = b;
+        svg.appendChild(path);
+
+        const tx = (ca.x + cb.x)/2;
+        const ty = (ca.y + cb.y)/2 - 8;
+        const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+        t.setAttribute('x', tx); t.setAttribute('y', ty);
+        t.setAttribute('text-anchor','middle');
+        t.setAttribute('class', `edge-label edge-${a} edge-${b} ${color === 'red' ? 'red' : ''}`);
+        t.textContent = label;
+        t.dataset.a = a; t.dataset.b = b;
+        svg.appendChild(t);
+      });
+    }
+
+    function wrapText(text, maxChars = 18){
+      const words = text.split(' ');
+      const lines = [];
+      let line = '';
+      words.forEach(w => {
+        if ((line + ' ' + w).trim().length > maxChars) { lines.push(line); line = w; }
+        else line = (line + ' ' + w).trim();
+      });
+      if (line) lines.push(line);
+      return lines;
+    }
+
+    function drawNodes(){
+      entities.forEach(e => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+        g.setAttribute('class','node');
+        g.dataset.id = e.id;
+        g.dataset.category = e.category;
+        g.innerHTML = `<rect x="${e.x}" y="${e.y}" width="${e.w}" height="${e.h}"></rect>`;
+        const lines = wrapText(e.name, e.w < 90 ? 10 : 18);
+        lines.forEach((line, i) => {
+          const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+          t.setAttribute('x', e.x + e.w/2);
+          t.setAttribute('y', e.y + e.h/2 - ((lines.length-1)*8) + i*16 + 5);
+          t.setAttribute('text-anchor','middle');
+          t.textContent = line;
+          g.appendChild(t);
+        });
+        g.addEventListener('click', () => selectEntity(e.id));
+        svg.appendChild(g);
+      });
+    }
+
+    function populateFilters(){
+      const box = document.getElementById('filters');
+      box.innerHTML = categories.map(c => `<label class="filter"><span>${c}</span><input type="checkbox" checked data-cat="${c}"></label>`).join('');
+      box.querySelectorAll('input').forEach(input => input.addEventListener('change', () => {
+        activeCats = new Set([...box.querySelectorAll('input:checked')].map(i => i.dataset.cat));
+        renderList(); applyVisibility();
+      }));
+    }
+
+    function renderList(){
+      const q = document.getElementById('search').value.toLowerCase().trim();
+      const list = document.getElementById('entityList');
+      const rows = entities.filter(e => activeCats.has(e.category) && (e.name + e.category + e.role + e.utility).toLowerCase().includes(q));
+      list.innerHTML = rows.map(e => `<button class="${e.id===activeId?'active':''}" onclick="selectEntity('${e.id}')"><strong>${e.name}</strong><small>${e.category} · ${e.influence}</small></button>`).join('');
+      renderTable(rows);
+    }
+
+    function renderTable(rows){
+      const tbody = document.querySelector('#dataTable tbody');
+      tbody.innerHTML = rows.map(e => `<tr onclick="selectEntity('${e.id}')"><td><strong>${e.name}</strong></td><td>${e.category}</td><td>${e.influence}</td><td>${e.role}</td><td>${e.utility}</td></tr>`).join('');
+    }
+
+    function selectEntity(id){
+      activeId = id;
+      const e = byId(id);
+      document.getElementById('detailCard').innerHTML = `<h2>${e.name}</h2><div class="meta"><span class="pill">${e.category}</span><span class="pill">Influenza: ${e.influence}</span></div><p><strong>Funzione:</strong> ${e.role}</p><p><strong>Utilità per SI:</strong> ${e.utility}</p>`;
+      document.querySelectorAll('.node').forEach(n => n.classList.toggle('active', n.dataset.id === id));
+      renderList(); highlightNetwork(id);
+    }
+
+    function highlightNetwork(id){
+      document.querySelectorAll('.node,.edge,.edge-label').forEach(el => el.classList.add('dim'));
+      document.querySelector(`.node[data-id="${id}"]`)?.classList.remove('dim');
+      document.querySelectorAll(`[data-a="${id}"],[data-b="${id}"]`).forEach(el => {
+        el.classList.remove('dim');
+        const other = el.dataset.a === id ? el.dataset.b : el.dataset.a;
+        document.querySelector(`.node[data-id="${other}"]`)?.classList.remove('dim');
+      });
+    }
+
+    function resetSelection(){
+      activeId = null;
+      document.querySelectorAll('.node,.edge,.edge-label').forEach(el => el.classList.remove('dim','active'));
+      document.getElementById('detailCard').innerHTML = `<h2>Mappa completa</h2><div class="meta"><span class="pill">Tutte le realtà</span></div><p>Seleziona un nodo per evidenziare le sue relazioni dirette.</p>`;
+      renderList();
+    }
+
+    function applyVisibility(){
+      document.querySelectorAll('.node').forEach(n => {
+        n.style.display = activeCats.has(n.dataset.category) ? '' : 'none';
+      });
+      document.querySelectorAll('.edge,.edge-label').forEach(el => {
+        const A = byId(el.dataset.a), B = byId(el.dataset.b);
+        el.style.display = activeCats.has(A.category) && activeCats.has(B.category) ? '' : 'none';
+      });
+    }
+
+    function downloadSVG(){
+      const serializer = new XMLSerializer();
+      const source = serializer.serializeToString(svg);
+      const blob = new Blob([source], {type:'image/svg+xml;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'mappa-casa-sfratti-bologna.svg';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    document.getElementById('search').addEventListener('input', renderList);
+    drawEdges();
+    drawNodes();
+    populateFilters();
+    renderList();
+    selectEntity('si');
+  </script>
+</body>
+</html>
